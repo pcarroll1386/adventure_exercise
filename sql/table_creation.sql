@@ -33,7 +33,15 @@ create table team(
 
 create table routine(
     routine_id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL,
+    times_per_week int,
+    notes TEXT
+);
+
+
+create table measurement_units(
+    unit_id BIGSerial PRIMARY KEY,
+    name varchar(50)
 );
 
 
@@ -48,10 +56,9 @@ create table team_user(
 
 
 create table user_routine(
-    user_routine_id BIGSERIAL PRIMARY KEY,
-    team_user_id BIGINT not null,
-    routine_id BIGINT not null,
-    number_of_times_a_week INT not null DEFAULT 1,
+    team_user_id BIGINT,
+    routine_id BIGINT,
+    PRIMARY Key(team_user_id, routine_id),
     CONSTRAINT fk_team_user FOREIGN KEY(team_user_id) REFERENCES team_user(team_user_id),
     CONSTRAINT fk_routine FOREIGN KEY(routine_id) REFERENCES routine(routine_id)
 );
@@ -68,7 +75,8 @@ create table team_routine(
 
 create table workout(
     workout_id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL
+    name VARCHAR(50) NOT NULL,
+    fluid_intake int
 );
 
 
@@ -97,11 +105,9 @@ create table day(
 
 
 create table workout_day(
-    user_routine_id BIGINT,
     day_id BIGINT,
     workout_id BIGINT,
-    PRIMARY KEY(user_routine_id, day_id, workout_id),
-    CONSTRAINT fk_user_routine FOREIGN KEY(user_routine_id) REFERENCES user_routine(user_routine_id),
+    PRIMARY KEY(day_id, workout_id),
     CONSTRAINT fk_day FOREIGN KEY(day_id) REFERENCES day(day_id),
     CONSTRAINT fk_workout FOREIGN KEY(workout_id) REFERENCES workout(workout_id)
 );
@@ -117,45 +123,11 @@ create table exercise(
     exercise_id BIGSERIAL PRIMARY KEY,
     type_id BIGINT not null,
     name varchar not null,
-    time timestamp not null DEFAULT now(),
+    timestamp timestamp not null DEFAULT now(),
+    is_log BOOLEAN not null DEFAULT false,
     instructional_link varchar(255),
-    duration int,
-    min_reps int,
-    max_reps int,
     has_weight BOOLEAN not null DEFAULT false,
     CONSTRAINT fk_type FOREIGN KEY(type_id) REFERENCES type(type_id)
-);
-
-
-create table user_routine_exercise_target(
-    user_routine_exercise_target_id BIGSERIAL PRIMARY KEY,
-    time INT,
-    set_number INT,
-    min_reps INT,
-    max_reps INT,
-    distance INT,
-    duration INT,
-    weight INT,
-    notes TEXT,
-    user_routine_id BIGINT NOT NULL,
-    exercise_id BIGINT NOT NULL,
-    CONSTRAINT fk_user_routine FOREIGN KEY(user_routine_id) REFERENCES user_routine(user_routine_id),
-    CONSTRAINT fk_exercise FOREIGN KEY(exercise_id) REFERENCES exercise(exercise_id)
-);
-
-
-create table log_entry(
-    log_entry_id BIGSERIAL PRIMARY KEY,
-    exercise_workout_targets_id BIGINT not null,
-    reps INT,
-    distance VARCHAR(255),
-    weight VARCHAR(255),
-    notes TEXT,
-    timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
-    sets INT,
-    time INT,
-    fluid_intake INT,
-    CONSTRAINT fk_exercise_workout_target FOREIGN KEY(exercise_workout_targets_id) REFERENCES user_routine_exercise_target(user_routine_exercise_target_id)
 );
 
 
@@ -180,4 +152,18 @@ create table exercise_equipment(
     PRIMARY KEY(exercise_id, equipment_id),
     CONSTRAINT fk_exercise FOREIGN KEY(exercise_id) REFERENCES exercise(exercise_id),
     CONSTRAINT fk_equipment FOREIGN KEY(equipment_id) REFERENCES equipment(equipment_id)
+);
+
+
+create table "set"(
+    set_id BIGSERIAL PRIMARY KEY,
+    exercise_id BIGSERIAL,
+    duration INT,
+    distance INT,
+    max_reps INT,
+    min_reps INT,
+    reps INT,
+    "weight" INT,
+    "timestamp" TIMESTAMP,
+    CONSTRAINT fk_exercise FOREIGN KEY (exercise_id) REFERENCES exercise(exercise_id)
 );
