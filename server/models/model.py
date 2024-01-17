@@ -1,7 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, BigInteger, Table
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, BigInteger, Table, datetime
 from sqlalchemy.orm import relationship, Mapped
 
-from server.database import Base
+from models.base import Base
 
 user_role = Table(
     "user_role",
@@ -20,6 +20,30 @@ user_routine = Table(
     Column("team_user_id", ForeignKey("team_user.team_user_id")),
     Column("routine_id", ForeignKey("routine.routine_id"))
 )
+
+workout_routine = Table(
+    "workout_routine",
+    Column("workout_id", ForeignKey("workout.workout_id")),
+    Column("routine_id", ForeignKey("routine.routine_id"))
+)
+
+workout_exercise = Table(
+    Column("workout_id", ForeignKey("workout.workout_id")),
+    Column("exercise_id", ForeignKey("exercise.exercise_id"))
+)
+
+workout_days = Table(
+    "workout_days",
+    Column("day_id", ForeignKey("day.day_id")),
+    Column("workout_id", ForeignKey("workout.workout_id"))
+)
+
+exercise_equipment = Table(
+    "exercise_equipment",
+    Column("exercise_id", ForeignKey("exercise.exercise_id")),
+    Column("equipment_id",ForeignKey("equipment.equipment_id"))
+)
+
 
 class Role(Base):
     __tablename__ = "role"
@@ -54,7 +78,7 @@ class TeamUser(Base):
     user = relationship("User", back_populates="team_users")
     team = relationship("Team", back_populates="team_users")
     user_routines = relationship("Routines", secondary=user_routine, back_populates="users")
-
+    
 
 class Team(Base):
     __tablename__ = "team"
@@ -107,3 +131,16 @@ class Equipment(Base):
 
     equipment_id = Column(BigInteger, primary_key=True)
     name = Column(String, nullable=False)
+
+class Exercise(Base):
+    __tablename__ = "exercise"
+
+    exercise_id = Column(BigInteger, primary_key=True)
+    name = Column(String, nullable=False)
+    timestamp = Column(datetime.DateTime(timezone=True), default=datetime.datetime.utcnow)
+    is_log = Column(Boolean, default=False)
+    instructional_link = Column(String)
+    has_weight = Column(Boolean, default=False)
+
+
+
